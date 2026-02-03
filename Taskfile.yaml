@@ -1,0 +1,90 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task -l
+
+  # Setup tasks
+  install:
+    desc: Install all dependencies
+    cmds:
+      - npm install
+
+  setup:
+    desc: Initial setup (install dependencies)
+    cmds:
+      - task: install
+
+  # Build tasks
+  build:
+    desc: Build TypeScript (protobuf generation optional)
+    cmds:
+      - npm run build-ts
+
+  build-proto:
+    desc: Generate protobuf JavaScript files (requires protoc)
+    cmds:
+      - npm run build-proto
+
+  # Development tasks
+  dev:
+    desc: Watch mode for development
+    cmds:
+      - npm run dev
+
+  # Testing
+  test:
+    desc: Run tests
+    cmds:
+      - npm test
+
+  test:watch:
+    desc: Run tests in watch mode
+    cmds:
+      - npm run test:watch
+
+  test:integration:
+    desc: Run integration tests (requires RoomService running)
+    cmds:
+      - npm run test:integration
+
+  # Demo tasks
+  demo:tictactoe:
+    desc: Run tic-tac-toe demo
+    dir: examples/tic-tac-toe
+    cmds:
+      - npm install
+      - npm start
+
+  # Code quality
+  lint:
+    desc: Lint code
+    cmds:
+      - npm run lint
+
+  format:
+    desc: Format code
+    cmds:
+      - npm run format
+
+  # Cleanup
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf dist/
+      - rm -rf generated/*.js
+      - rm -rf generated/*.d.ts
+
+  # Publishing
+  publish:dry:
+    desc: Dry run npm publish
+    cmds:
+      - npm pack --dry-run
+
+  publish:
+    desc: Publish to npm
+    cmds:
+      - npm run prepublishOnly
+      - npm publish
