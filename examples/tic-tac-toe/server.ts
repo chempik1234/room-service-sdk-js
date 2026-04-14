@@ -26,8 +26,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize RoomService client
 const roomServiceClient = new RoomServiceClient({
-  host: process.env.ROOM_SERVICE_HOST || 'localhost:50050',
-  apiKey: process.env.ROOM_SERVICE_API_KEY || '123'
+  host: process.env.ROOM_SERVICE_HOST || 'https://roomservice-proxy-production.up.railway.app:50051',
+  apiKey: process.env.ROOM_SERVICE_API_KEY || 'rs_live_tenant-dabusick-addaa112_72c81ea6-a72a-4577-8763-c6522fa8afd7'
 });
 
 // API: Create a new game room

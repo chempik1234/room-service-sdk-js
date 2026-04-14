@@ -26,10 +26,10 @@ npm install room-service-js
 ```javascript
 import { RoomServiceClient } from 'room-service-js';
 
-// Initialize client
+// Initialize client with multi-tenant proxy
 const client = new RoomServiceClient({
-  host: 'localhost:50050',
-  apiKey: process.env.ROOM_SERVICE_API_KEY  // Optional, defaults to '123'
+  host: 'https://roomservice-proxy-production.up.railway.app', // Full URL works!
+  apiKey: 'rs_live_yourtenantid_uuid' // From your control panel
 });
 
 // Create a room
@@ -61,6 +61,21 @@ console.log('Data:', snapshot.data);
 // Clean up
 await client.close();
 ```
+
+### Smart Hostname Handling
+
+The SDK automatically handles all these hostname formats:
+
+```javascript
+// All of these work perfectly:
+new RoomServiceClient({ host: 'localhost:50050' })
+new RoomServiceClient({ host: 'roomservice-proxy.up.railway.app' })
+new RoomServiceClient({ host: 'https://roomservice-proxy.up.railway.app' })
+new RoomServiceClient({ host: 'http://roomservice-proxy.up.railway.app' })
+new RoomServiceClient({ host: 'grpc://roomservice-proxy.up.railway.app' })
+```
+
+Just copy the hostname directly from your browser or control panel! 🎉
 
 ## Real-Time Streaming
 
@@ -255,36 +270,85 @@ try {
   if (error instanceof RoomServiceError) {
     console.error('Error:', error.message);
 
+    // Check specific error types
     if (error.isAuthenticationError()) {
       console.log('Check your API key');
     } else if (error.isPermissionError()) {
       console.log('You need to be the owner');
     } else if (error.isNotFoundError()) {
       console.log('Room not found');
+    } else if (error.isServerError()) {
+      console.log('Server error - try again later');
     }
+
+    // Get user-friendly message
+    console.log('User message:', error.getUserMessage());
   }
 }
 ```
+
+### Multi-Tenant Authentication
+
+When using the RoomService proxy, your API key automatically routes requests to your tenant instance:
+
+```javascript
+// Get your API key from the control panel
+const client = new RoomServiceClient({
+  host: 'https://roomservice-proxy.up.railway.app',
+  apiKey: 'rs_live_yourtenantid_uuid' // Format: rs_live_tenantid_uuid
+});
+
+// All requests are automatically authenticated with your API key
+await client.createRoom({ game_type: 'chess' });
+```
+
+**Error Codes:**
+
+| Code | Meaning | Solution |
+|------|---------|----------|
+| 16 | Unauthenticated | Invalid API key - check control panel |
+| 7 | Permission Denied | Tenant may be suspended or insufficient permissions |
+| 5 | Not Found | Room doesn't exist |
+| 13 | Internal Server Error | RoomService instance down - retry later |
+| 14 | Unavailable | Temporary issue - retry later |
+| 3 | Invalid Argument | Check command format |
+| 8 | Resource Exhausted | Rate limited - retry later |
 
 ## Configuration
 
 ### Environment Variables
 
 ```bash
-# RoomService connection
-ROOM_SERVICE_HOST=localhost:50050
-ROOM_SERVICE_API_KEY=your-api-key
+# RoomService connection (optional, can also pass in constructor)
+ROOM_SERVICE_HOST=https://roomservice-proxy.up.railway.app
+ROOM_SERVICE_API_KEY=rs_live_yourtenantid_uuid
 ```
 
 ### Client Options
 
 ```javascript
 const client = new RoomServiceClient({
-  host: 'localhost:50050',      // RoomService address
-  apiKey: 'your-api-key',       // API key (or use env var)
-  secure: false,                // Use TLS (default: false)
-  timeout: 5000                 // Request timeout in ms
+  host: 'https://roomservice-proxy.up.railway.app', // RoomService proxy address
+  apiKey: 'rs_live_yourtenantid_uuid',              // Your tenant's API key
+  secure: false,                                     // Use TLS (default: false)
+  timeout: 5000                                      // Request timeout in ms
 });
+```
+
+### Multi-Tenant Setup
+
+For multi-tenant deployments, use the RoomService proxy:
+
+```javascript
+// 1. Get your API key from the control panel (rs_live_tenantid_uuid)
+// 2. Use the proxy hostname
+const client = new RoomServiceClient({
+  host: 'https://roomservice-proxy.up.railway.app',
+  apiKey: 'rs_live_mytenant_abc123def456'
+});
+
+// The proxy automatically routes your requests to your tenant instance
+// No need to specify tenant ID manually!
 ```
 
 ## Documentation

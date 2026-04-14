@@ -40,7 +40,15 @@ export {
 export {
   RoomServiceError,
   wrapGrpcError,
+  isGrpcError,
 } from './utils/errors';
+
+// Metadata utilities
+export {
+  parseHost,
+  getApiKey,
+  createMetadata,
+} from './utils/metadata';
 
 // Event handlers
 export {

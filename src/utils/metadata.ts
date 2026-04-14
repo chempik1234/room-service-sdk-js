@@ -39,9 +39,41 @@ export function getApiKey(config: RoomServiceConfig): string {
 
 /**
  * Parse host string into host and port
+ * Handles various hostname formats:
+ * - localhost:50050
+ * - roomservice-proxy.up.railway.app
+ * - https://roomservice-proxy.up.railway.app
+ * - http://roomservice-proxy.up.railway.app
+ * - grpc://roomservice-proxy.up.railway.app
  */
 export function parseHost(host: string): { host: string; port: number } {
-  const [hostname, portStr] = host.split(':');
-  const port = portStr ? parseInt(portStr, 10) : 50050;
+  let cleanedHost = host.trim();
+
+  // Strip protocol prefixes if present
+  cleanedHost = cleanedHost.replace(/^https:\/\//, '');
+  cleanedHost = cleanedHost.replace(/^http:\/\//, '');
+  cleanedHost = cleanedHost.replace(/^grpc:\/\//, '');
+
+  // Remove any trailing slashes
+  cleanedHost = cleanedHost.replace(/\/+$/, '');
+
+  // Split by colon to separate host and port
+  const colonIndex = cleanedHost.lastIndexOf(':');
+
+  // Check if there's a port (must be after the last colon and be a number)
+  let hostname = cleanedHost;
+  let port = 50050; // Default gRPC port
+
+  if (colonIndex !== -1) {
+    const potentialPort = cleanedHost.substring(colonIndex + 1);
+    const portNum = parseInt(potentialPort, 10);
+
+    // Only treat as port if it's a valid number and not part of an IPv6 address
+    if (!isNaN(portNum) && portNum > 0 && portNum < 65536 && !cleanedHost.includes('[')) {
+      hostname = cleanedHost.substring(0, colonIndex);
+      port = portNum;
+    }
+  }
+
   return { host: hostname, port };
 }

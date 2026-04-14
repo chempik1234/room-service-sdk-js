@@ -8,12 +8,19 @@ import { RoomServiceClient } from 'room-service-js';
 
 async function quickStart() {
   // 1. Create a client
+  // The SDK now handles various hostname formats automatically:
+  // - 'localhost:50050'
+  // - 'roomservice-proxy.up.railway.app'
+  // - 'https://roomservice-proxy.up.railway.app'
+  // - 'http://roomservice-proxy.up.railway.app'
+  // - 'grpc://roomservice-proxy.up.railway.app'
   const client = new RoomServiceClient({
-    host: 'localhost:50050',
-    apiKey: process.env.ROOM_SERVICE_API_KEY || '123'
+    host: process.env.ROOM_SERVICE_HOST || 'localhost:50050',
+    apiKey: process.env.ROOM_SERVICE_API_KEY || 'rs_live_yourtenantid_uuid'
   });
 
   console.log('Connected to RoomService');
+  console.log('Host:', process.env.ROOM_SERVICE_HOST || 'localhost:50050');
 
   try {
     // 2. Create a room
@@ -87,7 +94,27 @@ async function quickStart() {
     console.log('Connection closed');
 
   } catch (error) {
-    console.error('Error:', error.message);
+    // Enhanced error handling with type safety
+    if (error.code) {
+      console.error('Error:', error.message);
+      console.error('Error Code:', error.code);
+
+      // Check specific error types
+      if (error.isAuthenticationError && error.isAuthenticationError()) {
+        console.error('❌ Authentication failed - check your API key');
+      } else if (error.isServerError && error.isServerError()) {
+        console.error('❌ Server error - try again later');
+      } else if (error.isNotFoundError && error.isNotFoundError()) {
+        console.error('❌ Room not found');
+      }
+
+      // Get user-friendly message
+      if (error.getUserMessage) {
+        console.error('User message:', error.getUserMessage());
+      }
+    } else {
+      console.error('Error:', error.message);
+    }
     await client.close();
   }
 }
