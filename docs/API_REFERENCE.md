@@ -78,6 +78,40 @@ const chessRooms = rooms.filter(r => r.roomOptions.game_type === 'chess');
 
 ---
 
+#### getUserActiveRooms
+
+```javascript
+async getUserActiveRooms(userId: string): Promise<RoomInfo[]>
+```
+
+List rooms that a specific user is currently in.
+
+**Parameters:**
+- `userId: string` - The user ID to filter rooms by
+
+**Returns:**
+```javascript
+Array<{
+  roomId: string;
+  roomOwnerId: string;
+  roomOptions: { [key: string]: string };
+}>
+```
+
+**Example:**
+```javascript
+// Get all rooms a user is in
+const myRooms = await client.getUserActiveRooms('player-1');
+console.log('Player 1 is in:', myRooms.length, 'rooms');
+
+// Find specific game types
+const myChessGames = myRooms.filter(r =>
+  r.roomOptions.game_type === 'chess'
+);
+```
+
+---
+
 ### User Management
 
 #### joinRoom

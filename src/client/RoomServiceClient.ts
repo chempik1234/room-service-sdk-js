@@ -257,6 +257,41 @@ export class RoomServiceClient {
     });
   }
 
+  /**
+   * List rooms that a specific user is currently in
+   *
+   * @param userId - The user ID to filter rooms by
+   * @returns Array of room information (without user lists or internal data)
+   *
+   * @example
+   * const myRooms = await client.getUserActiveRooms('player-1');
+   * console.log('Player 1 is in:', myRooms.length, 'rooms');
+   *
+   * // Find specific game types
+   * const myChessGames = myRooms.filter(r =>
+   *   r.roomOptions.game_type === 'chess'
+   * );
+   */
+  async getUserActiveRooms(userId: string): Promise<RoomInfo[]> {
+    this.ensureClient();
+
+    return new Promise((resolve, reject) => {
+      const metadata = this.createMetadata();
+
+      this.client.userActiveRoomsList(
+        { userId },
+        metadata,
+        (error: any, response: any) => {
+          if (error) {
+            reject(wrapGrpcError(error));
+          } else {
+            resolve(parseRoomsList(response));
+          }
+        }
+      );
+    });
+  }
+
   // ==================== User Management ====================
 
   /**

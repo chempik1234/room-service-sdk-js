@@ -162,6 +162,10 @@ await client.deleteRoom(roomId, userId);
 // List all rooms (returns RoomInfo[])
 const rooms = await client.listRooms();
 // RoomInfo = { roomId, roomOwnerId, roomOptions }
+
+// Get rooms a specific user is in
+const myRooms = await client.getUserActiveRooms('user-123');
+// Returns: RoomInfo[] for rooms containing this user
 ```
 
 #### User Management
@@ -373,6 +377,7 @@ await stream.joinRoom(roomId, { userId, userName });
 
 #### Pattern 3: Find Available Games
 ```javascript
+// List all rooms and filter
 const rooms = await client.listRooms();
 const available = rooms.filter(r =>
   r.roomOptions.game === 'chess' &&
@@ -381,6 +386,13 @@ const available = rooms.filter(r =>
 );
 
 console.log('Available games:', available);
+
+// Or get only rooms a user is in
+const myRooms = await client.getUserActiveRooms('user-123');
+const myActiveGames = myRooms.filter(r =>
+  r.roomOptions.game === 'chess' &&
+  r.roomOptions.status !== 'finished'
+);
 ```
 
 #### Pattern 4: Track Player Moves

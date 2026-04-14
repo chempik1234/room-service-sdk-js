@@ -114,6 +114,9 @@ await client.deleteRoom(roomId, 'owner-user-id');
 
 // List all rooms
 const rooms = await client.listRooms();
+
+// Get rooms a specific user is in
+const myRooms = await client.getUserActiveRooms('player-1');
 ```
 
 ### User Management
